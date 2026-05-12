@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile App Development — Practical Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #131626;
+    --card: #1a1e35;
+    --border: #252a45;
+    --accent-rn: #61dafb;
+    --accent-cordova: #e8a045;
+    --accent-android: #78c257;
+    --accent-purple: #c792ea;
+    --text: #e2e8f8;
+    --muted: #6b758f;
+    --highlight: #2a3050;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    padding: 0 0 80px;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: linear-gradient(135deg, #0d0f1a 0%, #1a1e35 60%, #0f1528 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(97,218,251,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  header h1 span { color: var(--accent-rn); }
+  header p {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 520px;
+  }
+
+  /* ─── Legend ─── */
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge.rn   { background: rgba(97,218,251,0.12); color: var(--accent-rn);    border: 1px solid rgba(97,218,251,0.3); }
+  .badge.cord { background: rgba(232,160,69,0.12);  color: var(--accent-cordova); border: 1px solid rgba(232,160,69,0.3); }
+  .badge.and  { background: rgba(120,194,87,0.12);  color: var(--accent-android);  border: 1px solid rgba(120,194,87,0.3); }
+  .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  /* ─── Main layout ─── */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 0; }
+
+  /* ─── Q&A Card ─── */
+  .qa-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 36px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .qa-card:hover { border-color: #3a4060; }
+
+  .qa-card.rn   { border-left: 4px solid var(--accent-rn); }
+  .qa-card.cord { border-left: 4px solid var(--accent-cordova); }
+  .qa-card.and  { border-left: 4px solid var(--accent-android); }
+
+  /* Question */
+  .question {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 24px;
+    background: var(--highlight);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .rn   .q-num { background: rgba(97,218,251,0.15);  color: var(--accent-rn); }
+  .cord .q-num { background: rgba(232,160,69,0.15);  color: var(--accent-cordova); }
+  .and  .q-num { background: rgba(120,194,87,0.15);  color: var(--accent-android); }
+
+  .q-text { flex: 1; }
+  .q-text h3 { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+  .q-text .platform-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.7;
+  }
+  .toggle-icon {
+    font-size: 1.1rem;
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-top: 4px;
+    transition: transform 0.3s;
+  }
+  .qa-card.open .toggle-icon { transform: rotate(180deg); }
+
+  /* Answer */
+  .answer { display: none; padding: 24px; }
+  .qa-card.open .answer { display: block; }
+
+  .answer p {
+    font-size: 0.9rem;
+    color: #a8b4cc;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+  .note {
+    background: rgba(199,146,234,0.08);
+    border: 1px solid rgba(199,146,234,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: var(--accent-purple);
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Code block */
+  .code-wrap { position: relative; }
+  pre {
+    background: #080a14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: #4a5070; }
+  .copy-btn.copied { color: var(--accent-android); border-color: var(--accent-android); }
+
+  /* Syntax highlighting */
+  .kw  { color: #c792ea; } /* keywords */
+  .fn  { color: #82aaff; } /* functions/methods */
+  .str { color: #c3e88d; } /* strings */
+  .num { color: #f78c6c; } /* numbers */
+  .cmt { color: #546e7a; font-style: italic; } /* comments */
+  .tag { color: #89ddff; } /* JSX tags / HTML tags */
+  .prop{ color: #80cbc4; } /* props / attributes */
+  .var { color: var(--accent-rn); } /* variables */
+  .jsx { color: #ffcb6b; } /* JSX component names */
+  .pun { color: #89ddff; } /* punctuation */
+
+  /* ─── Section heading ─── */
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin: 40px 0 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    padding: 40px 20px 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mobile App Dev<br><span>Practical Reference Guide</span></h1>
+  <p>20 exam-ready solutions — React Native, Apache Cordova & Android Java</p>
+</header>
+
+<div class="legend">
+  <span class="badge rn"><span class="badge-dot"></span>React Native</span>
+  <span class="badge cord"><span class="badge-dot"></span>Apache Cordova</span>
+  <span class="badge and"><span class="badge-dot"></span>Android Java</span>
+</div>
+
+<main>
+
+<!-- ═══════════════ REACT NATIVE ═══════════════ -->
+<div class="section-label"><span class="badge rn"><span class="badge-dot"></span>React Native</span></div>
+
+<!-- Q1 BMI -->
+<div class="qa-card rn" id="q1">
+  <div class="question" onclick="toggle('q1')">
+    <span class="q-num">01</span>
+    <div class="q-text">
+      <h3>BMI Calculator</h3>
+      <span class="platform-tag">React Native · useState · TextInput · Button</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Takes weight (kg) and height (cm) from the user, converts height to metres, then computes <code>BMI = weight / height²</code> and displays the result.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">weight</span>, <span class="fn">setWeight</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">height</span>, <span class="fn">setHeight</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">bmi</span>,    <span class="fn">setBmi</span>]    = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+  <span class="kw">const</span> <span class="fn">calculateBMI</span> = () => {
+    <span class="kw">const</span> h = <span class="fn">parseFloat</span>(height) / <span class="num">100</span>; <span class="cmt">// cm → metres</span>
+    <span class="kw">const</span> w = <span class="fn">parseFloat</span>(weight);
+    <span class="kw">if</span> (h > <span class="num">0</span> &amp;&amp; w > <span class="num">0</span>) <span class="fn">setBmi</span>((w / (h * h)).<span class="fn">toFixed</span>(<span class="num">2</span>));
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>BMI Calculator<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Weight (kg)"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setWeight} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Height (cm)"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setHeight} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Calculate BMI"</span> <span class="prop">onPress</span>={calculateBMI} <span class="tag">/&gt;</span>
+      {bmi &amp;&amp; <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.result}<span class="tag">&gt;</span>Your BMI: {bmi}<span class="tag">&lt;/Text&gt;</span>}
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}
+
+<span class="kw">const</span> styles = <span class="jsx">StyleSheet</span>.<span class="fn">create</span>({
+  container: { flex: <span class="num">1</span>, padding: <span class="num">20</span>, justifyContent: <span class="str">'center'</span> },
+  title:     { fontSize: <span class="num">24</span>, fontWeight: <span class="str">'bold'</span>, marginBottom: <span class="num">20</span>, textAlign: <span class="str">'center'</span> },
+  input:     { borderWidth: <span class="num">1</span>, padding: <span class="num">10</span>, marginBottom: <span class="num">10</span>, borderRadius: <span class="num">5</span> },
+  result:    { fontSize: <span class="num">20</span>, marginTop: <span class="num">20</span>, textAlign: <span class="str">'center'</span>, color: <span class="str">'blue'</span> }
+});</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q2 Expense -->
+<div class="qa-card rn" id="q2">
+  <div class="question" onclick="toggle('q2')">
+    <span class="q-num">02</span>
+    <div class="q-text">
+      <h3>Expense Manager</h3>
+      <span class="platform-tag">React Native · FlatList · Income/Expense tracking</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Records income and expense transactions with amounts and categories. Computes running totals for both types using <code>Array.reduce()</code>.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">FlatList</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">amount</span>,       <span class="fn">setAmount</span>]       = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">category</span>,     <span class="fn">setCategory</span>]     = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">type</span>,         <span class="fn">setType</span>]         = <span class="fn">useState</span>(<span class="str">'Expense'</span>);
+  <span class="kw">const</span> [<span class="var">transactions</span>, <span class="fn">setTransactions</span>] = <span class="fn">useState</span>([]);
+
+  <span class="kw">const</span> <span class="fn">addTransaction</span> = () => {
+    <span class="fn">setTransactions</span>([...transactions,
+      { id: Math.<span class="fn">random</span>().<span class="fn">toString</span>(), amount: <span class="fn">parseFloat</span>(amount), category, type }
+    ]);
+    <span class="fn">setAmount</span>(<span class="str">''</span>); <span class="fn">setCategory</span>(<span class="str">''</span>);
+  };
+
+  <span class="kw">const</span> <span class="fn">total</span> = (t) => transactions
+    .<span class="fn">filter</span>(x => x.type === t)
+    .<span class="fn">reduce</span>((acc, cur) => acc + cur.amount, <span class="num">0</span>);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Expense Manager<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Amount"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setAmount} <span class="prop">value</span>={amount} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Category"</span>
+        <span class="prop">onChangeText</span>={setCategory} <span class="prop">value</span>={category} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;View</span> <span class="prop">style</span>={{flexDirection:<span class="str">'row'</span>, justifyContent:<span class="str">'space-around'</span>, marginBottom:<span class="num">10</span>}}<span class="tag">&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Add Income"</span>  <span class="prop">onPress</span>={() => { <span class="fn">setType</span>(<span class="str">'Income'</span>);  <span class="fn">addTransaction</span>(); }} <span class="prop">color</span>=<span class="str">"green"</span> <span class="tag">/&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Add Expense"</span> <span class="prop">onPress</span>={() => { <span class="fn">setType</span>(<span class="str">'Expense'</span>); <span class="fn">addTransaction</span>(); }} <span class="prop">color</span>=<span class="str">"red"</span>   <span class="tag">/&gt;</span>
+      <span class="tag">&lt;/View&gt;</span>
+      <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Income: {<span class="fn">total</span>(<span class="str">'Income'</span>)} | Expense: {<span class="fn">total</span>(<span class="str">'Expense'</span>)}<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;FlatList</span> <span class="prop">data</span>={transactions}
+        <span class="prop">renderItem</span>={({item}) => <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.item}<span class="tag">&gt;</span>{item.category}: {item.amount} ({item.type})<span class="tag">&lt;/Text&gt;</span>}
+        <span class="prop">keyExtractor</span>={item => item.id} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q3 Event -->
+<div class="qa-card rn" id="q3">
+  <div class="question" onclick="toggle('q3')">
+    <span class="q-num">03</span>
+    <div class="q-text">
+      <h3>Event Management App</h3>
+      <span class="platform-tag">React Native · FlatList · CRUD</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Allows creating events with a name and date. Events are stored in local state and rendered in a scrollable list.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">FlatList</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">eventName</span>, <span class="fn">setEventName</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">date</span>,      <span class="fn">setDate</span>]      = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">events</span>,    <span class="fn">setEvents</span>]    = <span class="fn">useState</span>([]);
+
+  <span class="kw">const</span> <span class="fn">addEvent</span> = () => {
+    <span class="fn">setEvents</span>([...events, { id: Math.<span class="fn">random</span>().<span class="fn">toString</span>(), name: eventName, date }]);
+    <span class="fn">setEventName</span>(<span class="str">''</span>); <span class="fn">setDate</span>(<span class="str">''</span>);
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Event Manager<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Event Name"</span>
+        <span class="prop">onChangeText</span>={setEventName} <span class="prop">value</span>={eventName} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Date (DD/MM/YYYY)"</span>
+        <span class="prop">onChangeText</span>={setDate} <span class="prop">value</span>={date} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Create Event"</span> <span class="prop">onPress</span>={addEvent} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;FlatList</span> <span class="prop">data</span>={events}
+        <span class="prop">renderItem</span>={({item}) => <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.item}<span class="tag">&gt;</span>{item.name} — {item.date}<span class="tag">&lt;/Text&gt;</span>}
+        <span class="prop">keyExtractor</span>={item => item.id}
+        <span class="prop">style</span>={{marginTop: <span class="num">20</span>}} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q4 Calculator -->
+<div class="qa-card rn" id="q4">
+  <div class="question" onclick="toggle('q4')">
+    <span class="q-num">04</span>
+    <div class="q-text">
+      <h3>Simple Arithmetic Calculator</h3>
+      <span class="platform-tag">React Native · +  −  ×  ÷ operations</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Accepts two numbers and performs addition, subtraction, multiplication, or division based on which button is pressed.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">num1</span>,   <span class="fn">setNum1</span>]   = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">num2</span>,   <span class="fn">setNum2</span>]   = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">result</span>, <span class="fn">setResult</span>] = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+  <span class="kw">const</span> <span class="fn">calculate</span> = (op) => {
+    <span class="kw">const</span> n1 = <span class="fn">parseFloat</span>(num1), n2 = <span class="fn">parseFloat</span>(num2);
+    <span class="kw">const</span> ops = { <span class="str">'+'</span>: n1+n2, <span class="str">'-'</span>: n1-n2, <span class="str">'*'</span>: n1*n2, <span class="str">'/'</span>: n1/n2 };
+    <span class="fn">setResult</span>(ops[op]);
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Number 1"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setNum1} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Number 2"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setNum2} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.row}<span class="tag">&gt;</span>
+        {[<span class="str">'+'</span>,<span class="str">'-'</span>,<span class="str">'*'</span>,<span class="str">'/'</span>].<span class="fn">map</span>(op =>
+          <span class="tag">&lt;Button</span> <span class="prop">key</span>={op} <span class="prop">title</span>={op} <span class="prop">onPress</span>={() => <span class="fn">calculate</span>(op)} <span class="tag">/&gt;</span>
+        )}
+      <span class="tag">&lt;/View&gt;</span>
+      {result !== <span class="kw">null</span> &amp;&amp; <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.result}<span class="tag">&gt;</span>Result: {result}<span class="tag">&lt;/Text&gt;</span>}
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q5 Ticket Booking -->
+<div class="qa-card rn" id="q5">
+  <div class="question" onclick="toggle('q5')">
+    <span class="q-num">05</span>
+    <div class="q-text">
+      <h3>Ticket Booking App</h3>
+      <span class="platform-tag">React Native · Simulated DB update · Alert</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Preloads a list of buses with seat counts. Tapping "Book Now" decrements the seat count (simulating a DB update via state). Shows an alert if the bus is full.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">Button</span>, <span class="jsx">FlatList</span>, <span class="jsx">StyleSheet</span>, <span class="jsx">Alert</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">buses</span>, <span class="fn">setBuses</span>] = <span class="fn">useState</span>([
+    { id: <span class="str">'1'</span>, route: <span class="str">'City A to City B'</span>, boarding: <span class="str">'Station 1'</span>, seats: <span class="num">40</span> },
+    { id: <span class="str">'2'</span>, route: <span class="str">'City C to City D'</span>, boarding: <span class="str">'Station 2'</span>, seats: <span class="num">5</span>  },
+  ]);
+
+  <span class="kw">const</span> <span class="fn">bookTicket</span> = (id) =>
+    <span class="fn">setBuses</span>(buses.<span class="fn">map</span>(bus => {
+      <span class="kw">if</span> (bus.id === id) {
+        <span class="kw">if</span> (bus.seats > <span class="num">0</span>) {
+          <span class="jsx">Alert</span>.<span class="fn">alert</span>(<span class="str">"Success"</span>, <span class="str">`Ticket booked for ${bus.route}`</span>);
+          <span class="kw">return</span> { ...bus, seats: bus.seats - <span class="num">1</span> };
+        }
+        <span class="jsx">Alert</span>.<span class="fn">alert</span>(<span class="str">"Sorry"</span>, <span class="str">"Bus is full!"</span>);
+      }
+      <span class="kw">return</span> bus;
+    }));
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Transport Booking<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;FlatList</span> <span class="prop">data</span>={buses}
+        <span class="prop">renderItem</span>={({item}) => (
+          <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.card}<span class="tag">&gt;</span>
+            <span class="tag">&lt;Text</span><span class="tag">&gt;</span>{item.route} (Boarding: {item.boarding})<span class="tag">&lt;/Text&gt;</span>
+            <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Seats Available: {item.seats}<span class="tag">&lt;/Text&gt;</span>
+            <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Book Now"</span> <span class="prop">onPress</span>={() => <span class="fn">bookTicket</span>(item.id)} <span class="tag">/&gt;</span>
+          <span class="tag">&lt;/View&gt;</span>
+        )}
+        <span class="prop">keyExtractor</span>={item => item.id} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q6 Unit Converter -->
+<div class="qa-card rn" id="q6">
+  <div class="question" onclick="toggle('q6')">
+    <span class="q-num">06</span>
+    <div class="q-text">
+      <h3>Unit Converter</h3>
+      <span class="platform-tag">React Native · km↔mi · kg↔lb</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Single input value converted between kilometres/miles and kilograms/pounds depending on which button is tapped.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">val</span>,    <span class="fn">setVal</span>]    = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">result</span>, <span class="fn">setResult</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+
+  <span class="kw">const</span> conversions = {
+    kmToMi: n => <span class="str">`${n} km = ${(n * <span class="num">0.621371</span>).<span class="fn">toFixed</span>(<span class="num">2</span>)} miles`</span>,
+    miToKm: n => <span class="str">`${n} miles = ${(n * <span class="num">1.60934</span>).<span class="fn">toFixed</span>(<span class="num">2</span>)} km`</span>,
+    kgToLb: n => <span class="str">`${n} kg = ${(n * <span class="num">2.20462</span>).<span class="fn">toFixed</span>(<span class="num">2</span>)} lbs`</span>,
+    lbToKg: n => <span class="str">`${n} lbs = ${(n * <span class="num">0.453592</span>).<span class="fn">toFixed</span>(<span class="num">2</span>)} kg`</span>,
+  };
+
+  <span class="kw">const</span> <span class="fn">convert</span> = (type) => <span class="fn">setResult</span>(conversions[type](<span class="fn">parseFloat</span>(val)));
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Enter value"</span>
+        <span class="prop">keyboardType</span>=<span class="str">"numeric"</span> <span class="prop">onChangeText</span>={setVal} <span class="tag">/&gt;</span>
+      {[<span class="str">'kmToMi'</span>,<span class="str">'miToKm'</span>,<span class="str">'kgToLb'</span>,<span class="str">'lbToKg'</span>].<span class="fn">map</span>(t =>
+        <span class="tag">&lt;Button</span> <span class="prop">key</span>={t} <span class="prop">title</span>={t} <span class="prop">onPress</span>={() => <span class="fn">convert</span>(t)} <span class="tag">/&gt;</span>
+      )}
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.result}<span class="tag">&gt;</span>{result}<span class="tag">&lt;/Text&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q7 Client-Server -->
+<div class="qa-card rn" id="q7">
+  <div class="question" onclick="toggle('q7')">
+    <span class="q-num">07</span>
+    <div class="q-text">
+      <h3>Client-Server Simulation</h3>
+      <span class="platform-tag">React Native · setTimeout · ActivityIndicator</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Simulates a network request with a 2-second delay using <code>setTimeout</code>. Shows a loading spinner while "waiting" and then renders the JSON response payload.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">Button</span>, <span class="jsx">StyleSheet</span>, <span class="jsx">ActivityIndicator</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">status</span>,     <span class="fn">setStatus</span>]     = <span class="fn">useState</span>(<span class="str">'Idle'</span>);
+  <span class="kw">const</span> [<span class="var">serverData</span>, <span class="fn">setServerData</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+
+  <span class="kw">const</span> <span class="fn">simulateRequest</span> = () => {
+    <span class="fn">setStatus</span>(<span class="str">'Connecting to Server...'</span>);
+    <span class="fn">setServerData</span>(<span class="str">''</span>);
+    <span class="fn">setTimeout</span>(() => {
+      <span class="fn">setStatus</span>(<span class="str">'Response Received'</span>);
+      <span class="fn">setServerData</span>(<span class="jsx">JSON</span>.<span class="fn">stringify</span>({ message: <span class="str">"Hello from Simulated Server!"</span>, status: <span class="num">200</span> }));
+    }, <span class="num">2000</span>);
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Client-Server Simulation<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Status: {status}<span class="tag">&lt;/Text&gt;</span>
+      {status === <span class="str">'Connecting to Server...'</span> &amp;&amp;
+        <span class="tag">&lt;ActivityIndicator</span> <span class="prop">size</span>=<span class="str">"large"</span> <span class="prop">color</span>=<span class="str">"#0000ff"</span> <span class="tag">/&gt;</span>}
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Send Request to Server"</span> <span class="prop">onPress</span>={simulateRequest} <span class="tag">/&gt;</span>
+      {serverData !== <span class="str">''</span> &amp;&amp; (
+        <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.box}<span class="tag">&gt;</span>
+          <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Server Response:<span class="tag">&lt;/Text&gt;</span>
+          <span class="tag">&lt;Text</span> <span class="prop">style</span>={{color:<span class="str">'green'</span>}}<span class="tag">&gt;</span>{serverData}<span class="tag">&lt;/Text&gt;</span>
+        <span class="tag">&lt;/View&gt;</span>
+      )}
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q8 Hospital -->
+<div class="qa-card rn" id="q8">
+  <div class="question" onclick="toggle('q8')">
+    <span class="q-num">08</span>
+    <div class="q-text">
+      <h3>Hospital Management (Pre-booking)</h3>
+      <span class="platform-tag">React Native · Appointment booking · FlatList</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Simulates a hospital DB — lets users book appointments by entering patient and doctor names, then lists all saved appointments with a "Booked" status tag.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">FlatList</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">patient</span>,      <span class="fn">setPatient</span>]      = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">doctor</span>,       <span class="fn">setDoctor</span>]       = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">appointments</span>, <span class="fn">setAppointments</span>] = <span class="fn">useState</span>([]);
+
+  <span class="kw">const</span> <span class="fn">bookAppointment</span> = () => {
+    <span class="fn">setAppointments</span>([...appointments,
+      { id: Math.<span class="fn">random</span>().<span class="fn">toString</span>(), patient, doctor, status: <span class="str">'Booked'</span> }
+    ]);
+    <span class="fn">setPatient</span>(<span class="str">''</span>); <span class="fn">setDoctor</span>(<span class="str">''</span>);
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Hospital DB Manager<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Patient Name"</span>
+        <span class="prop">onChangeText</span>={setPatient} <span class="prop">value</span>={patient} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Doctor Name"</span>
+        <span class="prop">onChangeText</span>={setDoctor} <span class="prop">value</span>={doctor} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Save to Database"</span> <span class="prop">onPress</span>={bookAppointment} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;FlatList</span> <span class="prop">data</span>={appointments}
+        <span class="prop">renderItem</span>={({item}) => (
+          <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.card}<span class="tag">&gt;</span>
+            <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Patient: {item.patient}<span class="tag">&lt;/Text&gt;</span>
+            <span class="tag">&lt;Text</span><span class="tag">&gt;</span>Doctor: Dr. {item.doctor} ({item.status})<span class="tag">&lt;/Text&gt;</span>
+          <span class="tag">&lt;/View&gt;</span>
+        )}
+        <span class="prop">keyExtractor</span>={item => item.id} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q9 To-Do -->
+<div class="qa-card rn" id="q9">
+  <div class="question" onclick="toggle('q9')">
+    <span class="q-num">09</span>
+    <div class="q-text">
+      <h3>To-Do List Management</h3>
+      <span class="platform-tag">React Native · TouchableOpacity · tap-to-delete</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Add tasks via text input; tap any task to remove it. Uses <code>TouchableOpacity</code> for the delete interaction.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">TextInput</span>, <span class="jsx">Button</span>, <span class="jsx">FlatList</span>, <span class="jsx">StyleSheet</span>, <span class="jsx">TouchableOpacity</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">task</span>,  <span class="fn">setTask</span>]  = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [<span class="var">tasks</span>, <span class="fn">setTasks</span>] = <span class="fn">useState</span>([]);
+
+  <span class="kw">const</span> <span class="fn">addTask</span>    = () => {
+    <span class="kw">if</span> (task.<span class="fn">trim</span>()) {
+      <span class="fn">setTasks</span>([...tasks, { id: Date.<span class="fn">now</span>().<span class="fn">toString</span>(), text: task }]);
+      <span class="fn">setTask</span>(<span class="str">''</span>);
+    }
+  };
+  <span class="kw">const</span> <span class="fn">removeTask</span> = (id) => <span class="fn">setTasks</span>(tasks.<span class="fn">filter</span>(t => t.id !== id));
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Day-to-Day To-Do<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;TextInput</span> <span class="prop">style</span>={styles.input} <span class="prop">placeholder</span>=<span class="str">"Enter a task"</span>
+        <span class="prop">value</span>={task} <span class="prop">onChangeText</span>={setTask} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Add Task"</span> <span class="prop">onPress</span>={addTask} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;FlatList</span> <span class="prop">data</span>={tasks}
+        <span class="prop">renderItem</span>={({item}) => (
+          <span class="tag">&lt;TouchableOpacity</span> <span class="prop">onPress</span>={() => <span class="fn">removeTask</span>(item.id)}<span class="tag">&gt;</span>
+            <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.taskItem}<span class="tag">&gt;</span>• {item.text} (Tap to delete)<span class="tag">&lt;/Text&gt;</span>
+          <span class="tag">&lt;/TouchableOpacity&gt;</span>
+        )}
+        <span class="prop">keyExtractor</span>={item => item.id} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q14 Survey -->
+<div class="qa-card rn" id="q14">
+  <div class="question" onclick="toggle('q14')">
+    <span class="q-num">14</span>
+    <div class="q-text">
+      <h3>Online Survey &amp; Report Generation</h3>
+      <span class="platform-tag">React Native · toggle buttons · report output</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Two yes/no survey questions with colour-toggling buttons. On submission, generates a plain-text analysis report shown on screen.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="kw">import</span> React, { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="jsx">View</span>, <span class="jsx">Text</span>, <span class="jsx">Button</span>, <span class="jsx">StyleSheet</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [<span class="var">q1</span>,     <span class="fn">setQ1</span>]     = <span class="fn">useState</span>(<span class="kw">null</span>);
+  <span class="kw">const</span> [<span class="var">q2</span>,     <span class="fn">setQ2</span>]     = <span class="fn">useState</span>(<span class="kw">null</span>);
+  <span class="kw">const</span> [<span class="var">report</span>, <span class="fn">setReport</span>] = <span class="fn">useState</span>(<span class="str">''</span>);
+
+  <span class="kw">const</span> <span class="fn">generateReport</span> = () => {
+    <span class="kw">if</span> (!q1 || !q2) <span class="kw">return</span> <span class="fn">alert</span>(<span class="str">'Answer all questions!'</span>);
+    <span class="fn">setReport</span>(
+      <span class="str">`Public Report:\n- Tech Usage: ${q1 === 'yes' ? 'High' : 'Low'}\n- Remote Work Pref: ${q2 === 'yes' ? 'Positive' : 'Negative'}`</span>
+    );
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.container}<span class="tag">&gt;</span>
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.title}<span class="tag">&gt;</span>Public Opinion Survey<span class="tag">&lt;/Text&gt;</span>
+
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.question}<span class="tag">&gt;</span>1. Do you use AI daily?<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.row}<span class="tag">&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Yes"</span> <span class="prop">onPress</span>={() => <span class="fn">setQ1</span>(<span class="str">'yes'</span>)} <span class="prop">color</span>={q1===<span class="str">'yes'</span>?<span class="str">'green'</span>:<span class="str">'gray'</span>} <span class="tag">/&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"No"</span>  <span class="prop">onPress</span>={() => <span class="fn">setQ1</span>(<span class="str">'no'</span>)}  <span class="prop">color</span>={q1===<span class="str">'no'</span> ?<span class="str">'red'</span>  :<span class="str">'gray'</span>} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;/View&gt;</span>
+
+      <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.question}<span class="tag">&gt;</span>2. Do you prefer working from home?<span class="tag">&lt;/Text&gt;</span>
+      <span class="tag">&lt;View</span> <span class="prop">style</span>={styles.row}<span class="tag">&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Yes"</span> <span class="prop">onPress</span>={() => <span class="fn">setQ2</span>(<span class="str">'yes'</span>)} <span class="prop">color</span>={q2===<span class="str">'yes'</span>?<span class="str">'green'</span>:<span class="str">'gray'</span>} <span class="tag">/&gt;</span>
+        <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"No"</span>  <span class="prop">onPress</span>={() => <span class="fn">setQ2</span>(<span class="str">'no'</span>)}  <span class="prop">color</span>={q2===<span class="str">'no'</span> ?<span class="str">'red'</span>  :<span class="str">'gray'</span>} <span class="tag">/&gt;</span>
+      <span class="tag">&lt;/View&gt;</span>
+
+      <span class="tag">&lt;Button</span> <span class="prop">title</span>=<span class="str">"Generate Report"</span> <span class="prop">onPress</span>={generateReport} <span class="tag">/&gt;</span>
+      {report ? <span class="tag">&lt;Text</span> <span class="prop">style</span>={styles.report}<span class="tag">&gt;</span>{report}<span class="tag">&lt;/Text&gt;</span> : <span class="kw">null</span>}
+    <span class="tag">&lt;/View&gt;</span>
+  );
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CORDOVA ═══════════════ -->
+<div class="section-label"><span class="badge cord"><span class="badge-dot"></span>Apache Cordova</span></div>
+
+<!-- Q10 Geolocation -->
+<div class="qa-card cord" id="q10">
+  <div class="question" onclick="toggle('q10')">
+    <span class="q-num">10</span>
+    <div class="q-text">
+      <h3>Navigation / Geolocation</h3>
+      <span class="platform-tag">Cordova · navigator.geolocation · cordova-plugin-geolocation</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <div class="note">⚙ Plugin required: cordova plugin add cordova-plugin-geolocation</div>
+    <p>Uses the browser's <code>navigator.geolocation</code> API inside a Cordova app to fetch latitude and longitude after the device is ready.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;&lt;head&gt;</span>
+  <span class="tag">&lt;title&gt;</span>Navigation App<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;script</span> <span class="prop">src</span>=<span class="str">"cordova.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    document.<span class="fn">addEventListener</span>(<span class="str">'deviceready'</span>, onDeviceReady, <span class="kw">false</span>);
+
+    <span class="kw">function</span> <span class="fn">onDeviceReady</span>() {
+      document.<span class="fn">getElementById</span>(<span class="str">'btn'</span>).<span class="fn">addEventListener</span>(<span class="str">'click'</span>, () =>
+        navigator.geolocation.<span class="fn">getCurrentPosition</span>(onSuccess, onError)
+      );
+    }
+
+    <span class="kw">function</span> <span class="fn">onSuccess</span>(pos) {
+      document.<span class="fn">getElementById</span>(<span class="str">'out'</span>).innerHTML =
+        <span class="str">'Latitude: '</span>  + pos.coords.latitude  + <span class="str">'&lt;br&gt;'</span> +
+        <span class="str">'Longitude: '</span> + pos.coords.longitude;
+    }
+    <span class="kw">function</span> <span class="fn">onError</span>(e) { <span class="fn">alert</span>(<span class="str">'Error: '</span> + e.message); }
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;&lt;body</span> <span class="prop">style</span>=<span class="str">"text-align:center; margin-top:50px;"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;h2&gt;</span>Current Location Finder<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;button</span> <span class="prop">id</span>=<span class="str">"btn"</span><span class="tag">&gt;</span>Find My Location<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;p</span> <span class="prop">id</span>=<span class="str">"out"</span> <span class="prop">style</span>=<span class="str">"font-weight:bold; margin-top:20px;"</span><span class="tag">&gt;&lt;/p&gt;</span>
+<span class="tag">&lt;/body&gt;&lt;/html&gt;</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q11 Voting -->
+<div class="qa-card cord" id="q11">
+  <div class="question" onclick="toggle('q11')">
+    <span class="q-num">11</span>
+    <div class="q-text">
+      <h3>Online Voting System</h3>
+      <span class="platform-tag">Cordova · radio buttons · local vote counter</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Radio buttons let the user pick a candidate. On submit, the selected candidate's counter increments and live results update on screen.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;&lt;head&gt;</span>
+  <span class="tag">&lt;title&gt;</span>Online Voting<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;script</span> <span class="prop">src</span>=<span class="str">"cordova.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="kw">let</span> votes = { candidateA: <span class="num">0</span>, candidateB: <span class="num">0</span> };
+
+    <span class="kw">function</span> <span class="fn">submitVote</span>() {
+      <span class="kw">let</span> sel = document.<span class="fn">querySelector</span>(<span class="str">'input[name="vote"]:checked'</span>);
+      <span class="kw">if</span> (sel) {
+        votes[sel.value]++;
+        <span class="fn">alert</span>(<span class="str">"Vote submitted!"</span>);
+        document.<span class="fn">getElementById</span>(<span class="str">'results'</span>).innerHTML =
+          <span class="str">"Candidate A: "</span> + votes.candidateA +
+          <span class="str">" | Candidate B: "</span> + votes.candidateB;
+      } <span class="kw">else</span> { <span class="fn">alert</span>(<span class="str">"Please select a candidate."</span>); }
+    }
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;&lt;body</span> <span class="prop">style</span>=<span class="str">"font-family:Arial; padding:20px;"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;h2&gt;</span>Online Voting System<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;label&gt;&lt;input</span> <span class="prop">type</span>=<span class="str">"radio"</span> <span class="prop">name</span>=<span class="str">"vote"</span> <span class="prop">value</span>=<span class="str">"candidateA"</span><span class="tag">&gt;</span> Candidate A<span class="tag">&lt;/label&gt;&lt;br&gt;&lt;br&gt;</span>
+  <span class="tag">&lt;label&gt;&lt;input</span> <span class="prop">type</span>=<span class="str">"radio"</span> <span class="prop">name</span>=<span class="str">"vote"</span> <span class="prop">value</span>=<span class="str">"candidateB"</span><span class="tag">&gt;</span> Candidate B<span class="tag">&lt;/label&gt;&lt;br&gt;&lt;br&gt;</span>
+  <span class="tag">&lt;button</span> <span class="prop">type</span>=<span class="str">"button"</span> <span class="prop">onclick</span>=<span class="str">"submitVote()"</span><span class="tag">&gt;</span>Submit Vote<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;h3&gt;</span>Live Results:<span class="tag">&lt;/h3&gt;</span>
+  <span class="tag">&lt;p</span> <span class="prop">id</span>=<span class="str">"results"</span><span class="tag">&gt;</span>Candidate A: 0 | Candidate B: 0<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/body&gt;&lt;/html&gt;</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q12 Login -->
+<div class="qa-card cord" id="q12">
+  <div class="question" onclick="toggle('q12')">
+    <span class="q-num">12</span>
+    <div class="q-text">
+      <h3>Login Screen with Layout Manager</h3>
+      <span class="platform-tag">Cordova · CSS Flexbox · username/password form</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Flexbox acts as the layout manager. Centred login card with header image, username/password fields, Reset and Submit buttons side by side.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;&lt;head&gt;</span>
+  <span class="tag">&lt;title&gt;</span>Login<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;style&gt;</span>
+    body       { display:flex; justify-content:center; align-items:center;
+                 height:100vh; margin:0; background:#eee; }
+    .login-box { display:flex; flex-direction:column; padding:20px;
+                 background:#fff; border-radius:8px; width:300px;
+                 box-shadow:0 0 10px #ccc; }
+    .row       { display:flex; justify-content:space-between; margin-top:15px; }
+    input, button { padding:10px; margin-top:5px; }
+  <span class="tag">&lt;/style&gt;</span>
+<span class="tag">&lt;/head&gt;&lt;body&gt;</span>
+  <span class="tag">&lt;div</span> <span class="prop">class</span>=<span class="str">"login-box"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;img</span> <span class="prop">src</span>=<span class="str">"https://via.placeholder.com/300x100?text=Header"</span>
+         <span class="prop">style</span>=<span class="str">"width:100%; margin-bottom:20px;"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label</span> <span class="prop">style</span>=<span class="str">"text-align:center; font-size:20px; font-weight:bold;"</span><span class="tag">&gt;</span>User Login<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;label&gt;</span>Username:<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;input</span> <span class="prop">type</span>=<span class="str">"text"</span>     <span class="prop">id</span>=<span class="str">"username"</span> <span class="prop">placeholder</span>=<span class="str">"Enter username"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label&gt;</span>Password:<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;input</span> <span class="prop">type</span>=<span class="str">"password"</span> <span class="prop">id</span>=<span class="str">"password"</span> <span class="prop">placeholder</span>=<span class="str">"Enter password"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="prop">class</span>=<span class="str">"row"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;button</span> <span class="prop">onclick</span>=<span class="str">"document.getElementById('username').value='';
+               document.getElementById('password').value='';"</span><span class="tag">&gt;</span>Reset<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;button</span> <span class="prop">onclick</span>=<span class="str">"alert('Login Submitted')"</span><span class="tag">&gt;</span>Submit<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/body&gt;&lt;/html&gt;</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q16 SD Card -->
+<div class="qa-card cord" id="q16">
+  <div class="question" onclick="toggle('q16')">
+    <span class="q-num">16</span>
+    <div class="q-text">
+      <h3>SD Card Data Read/Write</h3>
+      <span class="platform-tag">Cordova · cordova-plugin-file · FileReader API</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <div class="note">⚙ Plugin required: cordova plugin add cordova-plugin-file</div>
+    <p>On device ready, resolves <code>data.txt</code> in external storage. Write button saves input text; Read button fetches it back using the <code>FileReader</code> API.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html&gt;&lt;head&gt;</span>
+  <span class="tag">&lt;title&gt;</span>SD Card Storage<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;script</span> <span class="prop">src</span>=<span class="str">"cordova.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="kw">let</span> fileEntry;
+    document.<span class="fn">addEventListener</span>(<span class="str">"deviceready"</span>, () => {
+      window.<span class="fn">resolveLocalFileSystemURL</span>(cordova.file.externalDataDirectory, dir =>
+        dir.<span class="fn">getFile</span>(<span class="str">"data.txt"</span>, {create: <span class="kw">true</span>}, file => { fileEntry = file; })
+      );
+    }, <span class="kw">false</span>);
+
+    <span class="kw">function</span> <span class="fn">writeData</span>() {
+      fileEntry.<span class="fn">createWriter</span>(w => {
+        w.<span class="fn">write</span>(document.<span class="fn">getElementById</span>(<span class="str">'inputData'</span>).value);
+        <span class="fn">alert</span>(<span class="str">"Data stored in SD Card!"</span>);
+      });
+    }
+    <span class="kw">function</span> <span class="fn">readData</span>() {
+      fileEntry.<span class="fn">file</span>(file => {
+        <span class="kw">const</span> r = <span class="kw">new</span> <span class="jsx">FileReader</span>();
+        r.onloadend = <span class="kw">function</span>() {
+          document.<span class="fn">getElementById</span>(<span class="str">'output'</span>).innerHTML = <span class="str">"Data: "</span> + <span class="kw">this</span>.result;
+        };
+        r.<span class="fn">readAsText</span>(file);
+      });
+    }
+  <span class="tag">&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;&lt;body</span> <span class="prop">style</span>=<span class="str">"padding:20px;"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;h2&gt;</span>SD Card File Manager<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;input</span> <span class="prop">type</span>=<span class="str">"text"</span> <span class="prop">id</span>=<span class="str">"inputData"</span> <span class="prop">placeholder</span>=<span class="str">"Enter data to save"</span><span class="tag">&gt;&lt;br&gt;&lt;br&gt;</span>
+  <span class="tag">&lt;button</span> <span class="prop">onclick</span>=<span class="str">"writeData()"</span><span class="tag">&gt;</span>Write to SD<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;button</span> <span class="prop">onclick</span>=<span class="str">"readData()"</span><span class="tag">&gt;</span>Read from SD<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;p</span> <span class="prop">id</span>=<span class="str">"output"</span><span class="tag">&gt;&lt;/p&gt;</span>
+<span class="tag">&lt;/body&gt;&lt;/html&gt;</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ANDROID JAVA ═══════════════ -->
+<div class="section-label"><span class="badge and"><span class="badge-dot"></span>Android Java</span></div>
+
+<!-- Q13 Online Exam -->
+<div class="qa-card and" id="q13">
+  <div class="question" onclick="toggle('q13')">
+    <span class="q-num">13</span>
+    <div class="q-text">
+      <h3>Online Examination with DB Mock</h3>
+      <span class="platform-tag">Android Java · RadioGroup · score evaluation</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Evaluates an MCQ (via RadioGroup) and a fill-in-the-blank (via EditText). Tallies the score and shows a simulated "saved to DB" message.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// MainActivity.java</span>
+<span class="kw">package</span> com.example.onlineexam;
+
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.widget.*;
+<span class="kw">import</span> androidx.appcompat.app.AppCompatActivity;
+
+<span class="kw">public class</span> <span class="jsx">MainActivity</span> <span class="kw">extends</span> <span class="jsx">AppCompatActivity</span> {
+    <span class="jsx">RadioGroup</span>  mcqGroup;
+    <span class="jsx">EditText</span>    fillBlankAnswer;
+    <span class="jsx">Button</span>      submitBtn;
+    <span class="jsx">TextView</span>    resultView;
+
+    @<span class="fn">Override</span>
+    <span class="kw">protected void</span> <span class="fn">onCreate</span>(<span class="jsx">Bundle</span> savedInstanceState) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState);
+        <span class="fn">setContentView</span>(R.layout.activity_main);
+
+        mcqGroup        = <span class="fn">findViewById</span>(R.id.mcqGroup);
+        fillBlankAnswer = <span class="fn">findViewById</span>(R.id.fillBlankAnswer);
+        submitBtn       = <span class="fn">findViewById</span>(R.id.submitBtn);
+        resultView      = <span class="fn">findViewById</span>(R.id.resultView);
+
+        submitBtn.<span class="fn">setOnClickListener</span>(v -> <span class="fn">evaluateExam</span>());
+    }
+
+    <span class="kw">private void</span> <span class="fn">evaluateExam</span>() {
+        <span class="kw">int</span> score = <span class="num">0</span>;
+
+        <span class="cmt">// MCQ check</span>
+        <span class="kw">if</span> (mcqGroup.<span class="fn">getCheckedRadioButtonId</span>() == R.id.correctOption)
+            score += <span class="num">10</span>;
+
+        <span class="cmt">// Fill-in-the-blank check</span>
+        <span class="kw">if</span> (fillBlankAnswer.<span class="fn">getText</span>().<span class="fn">toString</span>().<span class="fn">trim</span>().<span class="fn">equalsIgnoreCase</span>(<span class="str">"java"</span>))
+            score += <span class="num">10</span>;
+
+        resultView.<span class="fn">setText</span>(<span class="str">"Exam Submitted!\nYour Score: "</span> + score + <span class="str">"/20"</span>);
+        <span class="jsx">Toast</span>.<span class="fn">makeText</span>(<span class="kw">this</span>, <span class="str">"Answers saved successfully"</span>, <span class="jsx">Toast</span>.LENGTH_SHORT).<span class="fn">show</span>();
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q15 Library -->
+<div class="qa-card and" id="q15">
+  <div class="question" onclick="toggle('q15')">
+    <span class="q-num">15</span>
+    <div class="q-text">
+      <h3>Library Management (SQLite)</h3>
+      <span class="platform-tag">Android Java · SQLiteDatabase · INSERT · SELECT</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Opens/creates <code>LibraryDB</code>, creates an <code>Issue</code> table, then provides Save and View buttons to insert and read book-issue records.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// MainActivity.java</span>
+<span class="kw">package</span> com.example.library;
+
+<span class="kw">import</span> android.content.ContentValues;
+<span class="kw">import</span> android.database.Cursor;
+<span class="kw">import</span> android.database.sqlite.SQLiteDatabase;
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.widget.*;
+<span class="kw">import</span> androidx.appcompat.app.AppCompatActivity;
+
+<span class="kw">public class</span> <span class="jsx">MainActivity</span> <span class="kw">extends</span> <span class="jsx">AppCompatActivity</span> {
+    <span class="jsx">SQLiteDatabase</span> db;
+    <span class="jsx">EditText</span>       bookName, studentName;
+    <span class="jsx">TextView</span>       displayData;
+
+    @<span class="fn">Override</span>
+    <span class="kw">protected void</span> <span class="fn">onCreate</span>(<span class="jsx">Bundle</span> savedInstanceState) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState);
+        <span class="fn">setContentView</span>(R.layout.activity_main);
+
+        bookName    = <span class="fn">findViewById</span>(R.id.bookName);
+        studentName = <span class="fn">findViewById</span>(R.id.studentName);
+        displayData = <span class="fn">findViewById</span>(R.id.displayData);
+
+        db = <span class="fn">openOrCreateDatabase</span>(<span class="str">"LibraryDB"</span>, MODE_PRIVATE, <span class="kw">null</span>);
+        db.<span class="fn">execSQL</span>(<span class="str">"CREATE TABLE IF NOT EXISTS Issue(Book VARCHAR, Student VARCHAR);"</span>);
+
+        <span class="fn">findViewById</span>(R.id.saveBtn).<span class="fn">setOnClickListener</span>(v -> {
+            <span class="jsx">ContentValues</span> cv = <span class="kw">new</span> <span class="jsx">ContentValues</span>();
+            cv.<span class="fn">put</span>(<span class="str">"Book"</span>,    bookName.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            cv.<span class="fn">put</span>(<span class="str">"Student"</span>, studentName.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            db.<span class="fn">insert</span>(<span class="str">"Issue"</span>, <span class="kw">null</span>, cv);
+            <span class="jsx">Toast</span>.<span class="fn">makeText</span>(<span class="kw">this</span>, <span class="str">"Saved to DB!"</span>, <span class="jsx">Toast</span>.LENGTH_SHORT).<span class="fn">show</span>();
+        });
+
+        <span class="fn">findViewById</span>(R.id.viewBtn).<span class="fn">setOnClickListener</span>(v -> {
+            <span class="jsx">Cursor</span> cursor = db.<span class="fn">rawQuery</span>(<span class="str">"SELECT * FROM Issue"</span>, <span class="kw">null</span>);
+            <span class="jsx">StringBuilder</span> sb = <span class="kw">new</span> <span class="jsx">StringBuilder</span>();
+            <span class="kw">while</span> (cursor.<span class="fn">moveToNext</span>())
+                sb.<span class="fn">append</span>(cursor.<span class="fn">getString</span>(<span class="num">0</span>)).<span class="fn">append</span>(<span class="str">" issued to "</span>)
+                  .<span class="fn">append</span>(cursor.<span class="fn">getString</span>(<span class="num">1</span>)).<span class="fn">append</span>(<span class="str">"\n"</span>);
+            displayData.<span class="fn">setText</span>(sb.<span class="fn">toString</span>());
+            cursor.<span class="fn">close</span>();
+        });
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q17 College -->
+<div class="qa-card and" id="q17">
+  <div class="question" onclick="toggle('q17')">
+    <span class="q-num">17</span>
+    <div class="q-text">
+      <h3>College Management System</h3>
+      <span class="platform-tag">Android Java · SQLite · marks + attendance report</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Stores student name, marks, and attendance in <code>CollegeDB</code>. A "Generate Report" button queries all rows and formats them into a readable report string.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// MainActivity.java</span>
+<span class="kw">package</span> com.example.college;
+
+<span class="kw">import</span> android.database.Cursor;
+<span class="kw">import</span> android.database.sqlite.SQLiteDatabase;
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.widget.*;
+<span class="kw">import</span> androidx.appcompat.app.AppCompatActivity;
+
+<span class="kw">public class</span> <span class="jsx">MainActivity</span> <span class="kw">extends</span> <span class="jsx">AppCompatActivity</span> {
+    <span class="jsx">SQLiteDatabase</span> db;
+    <span class="jsx">EditText</span>       stuName, marks, attendance;
+    <span class="jsx">TextView</span>       reportView;
+
+    @<span class="fn">Override</span>
+    <span class="kw">protected void</span> <span class="fn">onCreate</span>(<span class="jsx">Bundle</span> savedInstanceState) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState);
+        <span class="fn">setContentView</span>(R.layout.activity_main);
+
+        stuName    = <span class="fn">findViewById</span>(R.id.stuName);
+        marks      = <span class="fn">findViewById</span>(R.id.marks);
+        attendance = <span class="fn">findViewById</span>(R.id.attendance);
+        reportView = <span class="fn">findViewById</span>(R.id.reportView);
+
+        db = <span class="fn">openOrCreateDatabase</span>(<span class="str">"CollegeDB"</span>, MODE_PRIVATE, <span class="kw">null</span>);
+        db.<span class="fn">execSQL</span>(<span class="str">"CREATE TABLE IF NOT EXISTS Student(Name VARCHAR, Marks VARCHAR, Att VARCHAR);"</span>);
+
+        <span class="fn">findViewById</span>(R.id.addBtn).<span class="fn">setOnClickListener</span>(v ->
+            db.<span class="fn">execSQL</span>(<span class="str">"INSERT INTO Student VALUES('"</span>
+              + stuName.<span class="fn">getText</span>() + <span class="str">"','"</span>
+              + marks.<span class="fn">getText</span>()   + <span class="str">"','"</span>
+              + attendance.<span class="fn">getText</span>() + <span class="str">"');"</span>)
+        );
+
+        <span class="fn">findViewById</span>(R.id.generateReportBtn).<span class="fn">setOnClickListener</span>(v -> {
+            <span class="jsx">Cursor</span> c = db.<span class="fn">rawQuery</span>(<span class="str">"SELECT * FROM Student"</span>, <span class="kw">null</span>);
+            <span class="jsx">StringBuilder</span> sb = <span class="kw">new</span> <span class="jsx">StringBuilder</span>(<span class="str">"--- College Report ---\n"</span>);
+            <span class="kw">while</span> (c.<span class="fn">moveToNext</span>())
+                sb.<span class="fn">append</span>(<span class="str">"Name: "</span>).<span class="fn">append</span>(c.<span class="fn">getString</span>(<span class="num">0</span>))
+                  .<span class="fn">append</span>(<span class="str">" | Marks: "</span>).<span class="fn">append</span>(c.<span class="fn">getString</span>(<span class="num">1</span>))
+                  .<span class="fn">append</span>(<span class="str">" | Att: "</span>).<span class="fn">append</span>(c.<span class="fn">getString</span>(<span class="num">2</span>)).<span class="fn">append</span>(<span class="str">"%\n"</span>);
+            reportView.<span class="fn">setText</span>(sb.<span class="fn">toString</span>()); c.<span class="fn">close</span>();
+        });
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q18 SMS -->
+<div class="qa-card and" id="q18">
+  <div class="question" onclick="toggle('q18')">
+    <span class="q-num">18</span>
+    <div class="q-text">
+      <h3>SMS Received Alert</h3>
+      <span class="platform-tag">Android Java · BroadcastReceiver · SmsMessage</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <div class="note">⚙ Manifest: add RECEIVE_SMS permission and register SmsReceiver as a &lt;receiver&gt;</div>
+    <p>A <code>BroadcastReceiver</code> listens for <code>SMS_RECEIVED</code>. On arrival it extracts the sender and body from the PDU bundle and shows a Toast alert.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// SmsReceiver.java</span>
+<span class="kw">package</span> com.example.smsalert;
+
+<span class="kw">import</span> android.content.BroadcastReceiver;
+<span class="kw">import</span> android.content.Context;
+<span class="kw">import</span> android.content.Intent;
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.telephony.SmsMessage;
+<span class="kw">import</span> android.widget.Toast;
+
+<span class="kw">public class</span> <span class="jsx">SmsReceiver</span> <span class="kw">extends</span> <span class="jsx">BroadcastReceiver</span> {
+    @<span class="fn">Override</span>
+    <span class="kw">public void</span> <span class="fn">onReceive</span>(<span class="jsx">Context</span> context, <span class="jsx">Intent</span> intent) {
+        <span class="kw">if</span> (<span class="str">"android.provider.Telephony.SMS_RECEIVED"</span>.<span class="fn">equals</span>(intent.<span class="fn">getAction</span>())) {
+            <span class="jsx">Bundle</span> bundle = intent.<span class="fn">getExtras</span>();
+            <span class="kw">if</span> (bundle != <span class="kw">null</span>) {
+                <span class="jsx">Object</span>[] pdus = (<span class="jsx">Object</span>[]) bundle.<span class="fn">get</span>(<span class="str">"pdus"</span>);
+                <span class="kw">if</span> (pdus != <span class="kw">null</span>) {
+                    <span class="kw">for</span> (<span class="jsx">Object</span> pdu : pdus) {
+                        <span class="jsx">SmsMessage</span> msg = <span class="jsx">SmsMessage</span>.<span class="fn">createFromPdu</span>((<span class="kw">byte</span>[]) pdu);
+                        <span class="jsx">String</span> sender = msg.<span class="fn">getDisplayOriginatingAddress</span>();
+                        <span class="jsx">String</span> body   = msg.<span class="fn">getMessageBody</span>();
+                        <span class="jsx">Toast</span>.<span class="fn">makeText</span>(context,
+                            <span class="str">"ALERT from "</span> + sender + <span class="str">": "</span> + body,
+                            <span class="jsx">Toast</span>.LENGTH_LONG).<span class="fn">show</span>();
+                    }
+                }
+            }
+        }
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q19 Payroll -->
+<div class="qa-card and" id="q19">
+  <div class="question" onclick="toggle('q19')">
+    <span class="q-num">19</span>
+    <div class="q-text">
+      <h3>Payroll Processing with Leave Application</h3>
+      <span class="platform-tag">Android Java · SQLite · net-pay deduction formula</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Calculates <strong>Net Pay = (Basic + DA + HRA + Allowances) − (Leave days × daily rate)</strong>. Result is stored in <code>CompanyDB</code> and displayed in a TextView.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// MainActivity.java</span>
+<span class="kw">package</span> com.example.payroll;
+
+<span class="kw">import</span> android.content.ContentValues;
+<span class="kw">import</span> android.database.sqlite.SQLiteDatabase;
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.widget.*;
+<span class="kw">import</span> androidx.appcompat.app.AppCompatActivity;
+
+<span class="kw">public class</span> <span class="jsx">MainActivity</span> <span class="kw">extends</span> <span class="jsx">AppCompatActivity</span> {
+    <span class="jsx">SQLiteDatabase</span> db;
+    <span class="jsx">EditText</span>       empName, basicPay, da, hra, allowances, leaveDays;
+    <span class="jsx">TextView</span>       resultView;
+
+    @<span class="fn">Override</span>
+    <span class="kw">protected void</span> <span class="fn">onCreate</span>(<span class="jsx">Bundle</span> savedInstanceState) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState);
+        <span class="fn">setContentView</span>(R.layout.activity_main);
+
+        empName    = <span class="fn">findViewById</span>(R.id.empName);
+        basicPay   = <span class="fn">findViewById</span>(R.id.basicPay);
+        da         = <span class="fn">findViewById</span>(R.id.da);
+        hra        = <span class="fn">findViewById</span>(R.id.hra);
+        allowances = <span class="fn">findViewById</span>(R.id.allowances);
+        leaveDays  = <span class="fn">findViewById</span>(R.id.leaveDays);
+        resultView = <span class="fn">findViewById</span>(R.id.resultView);
+
+        db = <span class="fn">openOrCreateDatabase</span>(<span class="str">"CompanyDB"</span>, MODE_PRIVATE, <span class="kw">null</span>);
+        db.<span class="fn">execSQL</span>(<span class="str">"CREATE TABLE IF NOT EXISTS Payroll(Name VARCHAR, NetPay REAL, Leaves INTEGER);"</span>);
+
+        <span class="fn">findViewById</span>(R.id.calcBtn).<span class="fn">setOnClickListener</span>(v -> <span class="fn">processPayroll</span>());
+        <span class="fn">findViewById</span>(R.id.leaveBtn).<span class="fn">setOnClickListener</span>(v ->
+            <span class="jsx">Toast</span>.<span class="fn">makeText</span>(<span class="kw">this</span>,
+              <span class="str">"Leave application for "</span> + leaveDays.<span class="fn">getText</span>() +
+              <span class="str">" days submitted for "</span>   + empName.<span class="fn">getText</span>(),
+              <span class="jsx">Toast</span>.LENGTH_LONG).<span class="fn">show</span>()
+        );
+    }
+
+    <span class="kw">private void</span> <span class="fn">processPayroll</span>() {
+        <span class="kw">try</span> {
+            <span class="kw">double</span> basic  = <span class="jsx">Double</span>.<span class="fn">parseDouble</span>(basicPay.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            <span class="kw">double</span> daVal  = <span class="jsx">Double</span>.<span class="fn">parseDouble</span>(da.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            <span class="kw">double</span> hraVal = <span class="jsx">Double</span>.<span class="fn">parseDouble</span>(hra.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            <span class="kw">double</span> allow  = <span class="jsx">Double</span>.<span class="fn">parseDouble</span>(allowances.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            <span class="kw">int</span>    leaves = <span class="jsx">Integer</span>.<span class="fn">parseInt</span>(leaveDays.<span class="fn">getText</span>().<span class="fn">toString</span>());
+
+            <span class="kw">double</span> netPay = (basic + daVal + hraVal + allow) - (leaves * basic / <span class="num">30</span>);
+
+            <span class="jsx">ContentValues</span> cv = <span class="kw">new</span> <span class="jsx">ContentValues</span>();
+            cv.<span class="fn">put</span>(<span class="str">"Name"</span>,   empName.<span class="fn">getText</span>().<span class="fn">toString</span>());
+            cv.<span class="fn">put</span>(<span class="str">"NetPay"</span>, netPay);
+            cv.<span class="fn">put</span>(<span class="str">"Leaves"</span>, leaves);
+            db.<span class="fn">insert</span>(<span class="str">"Payroll"</span>, <span class="kw">null</span>, cv);
+
+            resultView.<span class="fn">setText</span>(<span class="jsx">String</span>.<span class="fn">format</span>(<span class="str">"Net Pay: ₹%.2f\nSaved to DB!"</span>, netPay));
+        } <span class="kw">catch</span> (<span class="jsx">Exception</span> e) {
+            <span class="jsx">Toast</span>.<span class="fn">makeText</span>(<span class="kw">this</span>, <span class="str">"Enter valid numeric values"</span>, <span class="jsx">Toast</span>.LENGTH_SHORT).<span class="fn">show</span>();
+        }
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Q20 Media Sharing -->
+<div class="qa-card and" id="q20">
+  <div class="question" onclick="toggle('q20')">
+    <span class="q-num">20</span>
+    <div class="q-text">
+      <h3>Communication Model for Media Sharing</h3>
+      <span class="platform-tag">Android Java · Intent.ACTION_SEND · image / video / audio</span>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="answer">
+    <p>Uses Android's implicit intent system (<code>Intent.ACTION_SEND</code>) to open the OS share sheet for images, videos, and audio files. Delegates actual delivery to the chosen app (Messages, Gmail, etc.).</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+<pre><span class="cmt">// MainActivity.java</span>
+<span class="kw">package</span> com.example.mediashare;
+
+<span class="kw">import</span> android.content.Intent;
+<span class="kw">import</span> android.os.Bundle;
+<span class="kw">import</span> android.widget.Button;
+<span class="kw">import</span> androidx.appcompat.app.AppCompatActivity;
+
+<span class="kw">public class</span> <span class="jsx">MainActivity</span> <span class="kw">extends</span> <span class="jsx">AppCompatActivity</span> {
+
+    @<span class="fn">Override</span>
+    <span class="kw">protected void</span> <span class="fn">onCreate</span>(<span class="jsx">Bundle</span> savedInstanceState) {
+        <span class="kw">super</span>.<span class="fn">onCreate</span>(savedInstanceState);
+        <span class="fn">setContentView</span>(R.layout.activity_main);
+
+        ((<span class="jsx">Button</span>) <span class="fn">findViewById</span>(R.id.shareImgBtn))  .<span class="fn">setOnClickListener</span>(v -> <span class="fn">shareMedia</span>(<span class="str">"image/*"</span>));
+        ((<span class="jsx">Button</span>) <span class="fn">findViewById</span>(R.id.shareVidBtn))  .<span class="fn">setOnClickListener</span>(v -> <span class="fn">shareMedia</span>(<span class="str">"video/*"</span>));
+        ((<span class="jsx">Button</span>) <span class="fn">findViewById</span>(R.id.shareAudioBtn)).<span class="fn">setOnClickListener</span>(v -> <span class="fn">shareMedia</span>(<span class="str">"audio/*"</span>));
+    }
+
+    <span class="kw">private void</span> <span class="fn">shareMedia</span>(<span class="jsx">String</span> mimeType) {
+        <span class="jsx">Intent</span> i = <span class="kw">new</span> <span class="jsx">Intent</span>(<span class="jsx">Intent</span>.ACTION_SEND);
+        i.<span class="fn">setType</span>(mimeType);
+        i.<span class="fn">putExtra</span>(<span class="jsx">Intent</span>.EXTRA_TEXT, <span class="str">"Sharing a "</span> + mimeType + <span class="str">" file!"</span>);
+        <span class="cmt">// Attach actual file URI: i.putExtra(Intent.EXTRA_STREAM, fileUri);</span>
+        <span class="fn">startActivity</span>(<span class="jsx">Intent</span>.<span class="fn">createChooser</span>(i, <span class="str">"Share Media..."</span>));
+    }
+}</pre>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <p>Mobile App Dev · Practical Reference · 20 Questions · RN / Cordova / Android Java</p>
+  <p style="margin-top:8px; opacity:0.5;">Click any question header to expand · Click copy to copy the code</p>
+</footer>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Open first card by default
+  document.getElementById('q1').classList.add('open');
+</script>
+</body>
+</html>
